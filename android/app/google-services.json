@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "564547243693",
+    "project_id": "mws-tubes",
+    "storage_bucket": "mws-tubes.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:564547243693:android:a0d9c8b018777e3edb8024",
+        "android_client_info": {
+          "package_name": "com.example.catatan_keuangan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7hlUbqbUsnMAZ3FfhvSMVbyL3QrhoU48"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:564547243693:android:65e1b1c72f6054a9db8024",
+        "android_client_info": {
+          "package_name": "com.example.tugasbesar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7hlUbqbUsnMAZ3FfhvSMVbyL3QrhoU48"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
