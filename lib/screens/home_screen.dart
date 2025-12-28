@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/expense.dart';
 import '../services/locator.dart';
+import '../services/auth_service.dart';
 import 'add_expense_screen.dart';
 
 const expenseBoxName = 'expense_box';
@@ -91,41 +92,58 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.white24),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              dropdownColor: const Color(0xFF12856F),
-                              iconEnabledColor: Colors.white,
-                              value: _currencyCode,
-                              items: _currencies.keys
-                                  .map(
-                                    (c) => DropdownMenuItem(
-                                      value: c,
-                                      child: Text(
-                                        c,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w700,
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: Colors.white24),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  dropdownColor: const Color(0xFF12856F),
+                                  iconEnabledColor: Colors.white,
+                                  value: _currencyCode,
+                                  items: _currencies.keys
+                                      .map(
+                                        (c) => DropdownMenuItem(
+                                          value: c,
+                                          child: Text(
+                                            c,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (v) {
-                                if (v == null) return;
-                                setState(() => _currencyCode = v);
-                              },
+                                      )
+                                      .toList(),
+                                  onChanged: (v) {
+                                    if (v == null) {
+                                      return;
+                                    }
+                                    setState(() => _currencyCode = v);
+                                  },
+                                ),
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              onPressed: () async {
+                                await AuthService().signOut();
+                              },
+                              icon: const Icon(
+                                Icons.logout,
+                                color: Colors.white,
+                              ),
+                              tooltip: 'Keluar',
+                            ),
+                          ],
                         ),
                       ],
                     ),

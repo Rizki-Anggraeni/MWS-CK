@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'screens/auth_screen.dart';
 import 'models/expense.dart';
 import 'screens/home_screen.dart';
 import 'services/locator.dart';
@@ -43,7 +45,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: _homeByAuth(),
     );
   }
 }
@@ -62,4 +64,20 @@ Future<void> _init() async {
   }
 
   setupRepositories(box);
+}
+
+Widget _homeByAuth() {
+  if (Firebase.apps.isEmpty) {
+    return const HomeScreen();
+  }
+  return StreamBuilder<User?>(
+    stream: FirebaseAuth.instance.authStateChanges(),
+    builder: (context, snap) {
+      final user = snap.data;
+      if (user == null) {
+        return const AuthScreen();
+      }
+      return const HomeScreen();
+    },
+  );
 }

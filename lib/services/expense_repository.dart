@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive/hive.dart';
 import '../models/expense.dart';
 
@@ -29,28 +30,34 @@ class HiveExpenseRepository implements ExpenseRepository {
 }
 
 class FirestoreExpenseRepository implements ExpenseRepository {
-  final CollectionReference<Expense> _col = FirebaseFirestore.instance
-      .collection('expenses')
-      .withConverter<Expense>(
-        fromFirestore: (snap, _) =>
-            Expense.fromJson(snap.data() ?? {}, id: snap.id),
-        toFirestore: (Expense e, _) => e.toJson(),
-      );
+  CollectionReference<Expense> _collectionForUser() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final base = FirebaseFirestore.instance;
+    final col = uid != null
+        ? base.collection('users').doc(uid).collection('expenses')
+        : base.collection('expenses');
+    return col.withConverter<Expense>(
+      fromFirestore: (snap, _) =>
+          Expense.fromJson(snap.data() ?? {}, id: snap.id),
+      toFirestore: (Expense e, _) => e.toJson(),
+    );
+  }
 
   @override
   Future<void> add(Expense e) async {
-    await _col.doc(e.id).set(e);
+    await _collectionForUser().doc(e.id).set(e);
   }
 
   @override
   Future<void> delete(String id) async {
-    await _col.doc(id).delete();
+    await _collectionForUser().doc(id).delete();
   }
 
   @override
   Stream<List<Expense>> watchAll() {
-    return _col.orderBy('date', descending: true).snapshots().map(
-          (s) => s.docs.map((d) => d.data()).toList(),
-        );
+    return _collectionForUser()
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((s) => s.docs.map((d) => d.data()).toList());
   }
 }
