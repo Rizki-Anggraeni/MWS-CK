@@ -1,12 +1,13 @@
-# Daily Expense Tracker (Hive)
+# Manajer Langganan (Hive)
 
-A simple Flutter app to track daily expenses with local storage using Hive.
+Sebuah aplikasi Flutter sederhana untuk mengelola langganan bulanan dengan penyimpanan lokal menggunakan Hive.
 
-## Features
-- Material 3 UI
-- Add, list, and delete expenses
-- Total spending for the current month
-- Category dropdown, date picker, and numeric amount filter
+## Fitur
+- UI Material 3
+- Tambah, lihat, dan hapus langganan
+- Periode langganan (Sekali / Mingguan / Bulanan / Tahunan) dan otomatisasi tanggal tagihan berikutnya
+- Total biaya bulanan
+- Kategori, pemilih tanggal, dan input angka untuk biaya
 
 ## Setup
 1. Install dependencies and generate adapters:

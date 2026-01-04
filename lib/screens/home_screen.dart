@@ -8,11 +8,11 @@ import 'add_expense_screen.dart';
 const expenseBoxName = 'expense_box';
 
 final Map<String, (IconData, Color)> kCategoryIconMap = {
-  'Makan': (Icons.restaurant, Colors.green),
-  'Transportasi': (Icons.directions_bus, Colors.blue),
-  'Kost': (Icons.home, Colors.orange),
-  'Kuliah': (Icons.school, Colors.purple),
-  'Hiburan': (Icons.movie, Colors.pink),
+  'Streaming': (Icons.video_library, Colors.purple),
+  'Utilitas': (Icons.power, Colors.blue),
+  'SaaS': (Icons.cloud, Colors.teal),
+  'Produktivitas': (Icons.work, Colors.orange),
+  'Lainnya': (Icons.category, Colors.grey),
 };
 
 class HomeScreen extends StatefulWidget {
@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
                             Text(
-                              'Halo, mari catat pengeluaran',
+                              'Halo, mari catat langganan',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -83,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SizedBox(height: 6),
                             Text(
-                              'Daily Expense Tracker',
+                              'Manajer Langganan',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
@@ -193,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                           ),
                                           Text(
-                                            '${grouped[day]!.length} transaksi',
+                                            '${grouped[day]!.length} langganan',
                                             style: const TextStyle(
                                               fontSize: 12,
                                               color: Color(0xFF708090),
@@ -208,6 +208,90 @@ class _HomeScreenState extends State<HomeScreen> {
                                         currencyCode: _currencyCode,
                                         onDelete: () =>
                                             expenseRepo.delete(e.id),
+                                        onMarkPaid: () async {
+                                          final freq = e.frequency;
+                                          DateTime? newNext;
+                                          final base =
+                                              e.nextBillingDate ??
+                                              DateTime.now();
+
+                                          if (freq == 'Sekali') {
+                                            if (mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Tagihan sekali sudah dibayar.',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                            return;
+                                          }
+
+                                          if (freq == 'Mingguan') {
+                                            newNext = base.add(
+                                              const Duration(days: 7),
+                                            );
+                                          } else if (freq == 'Bulanan') {
+                                            newNext = _addMonths(base, 1);
+                                          } else if (freq == 'Tahunan') {
+                                            newNext = _addMonths(base, 12);
+                                          }
+
+                                          if (newNext == null) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Tagihan sekali sudah dibayar.',
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
+
+                                          final updated = Expense(
+                                            id: e.id,
+                                            amount: e.amount,
+                                            category: e.category,
+                                            date: e.date,
+                                            note: e.note,
+                                            nextBillingDate: newNext,
+                                            frequency: e.frequency,
+                                            paymentType: e.paymentType,
+                                          );
+
+                                          final messenger =
+                                              ScaffoldMessenger.of(context);
+                                          try {
+                                            await expenseRepo.update(updated);
+                                            final daysUntil = newNext
+                                                .difference(DateTime.now())
+                                                .inDays;
+                                            if (mounted) {
+                                              messenger.showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Tagihan sudah dibayar. Tagihan selanjutnya dalam $daysUntil hari.',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          } catch (err) {
+                                            if (mounted) {
+                                              messenger.showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Gagal memperbarui tagihan: $err',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
                                       ),
                                   ],
                                 ],
@@ -228,7 +312,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ).push(MaterialPageRoute(builder: (_) => const AddExpenseScreen()));
         },
         icon: const Icon(Icons.add),
-        label: const Text('Tambah'),
+        label: const Text('Tambah Langganan'),
       ),
     );
   }
@@ -247,17 +331,29 @@ class _HomeScreenState extends State<HomeScreen> {
     String two(int n) => n.toString().padLeft(2, '0');
     return '${two(d.day)}/${two(d.month)}/${d.year}';
   }
+
+  static DateTime _addMonths(DateTime date, int months) {
+    final totalMonths = date.month - 1 + months;
+    final y = date.year + (totalMonths ~/ 12);
+    final m = (totalMonths % 12) + 1;
+    final day = date.day;
+    final lastDay = DateTime(y, m + 1, 0).day;
+    final d = day <= lastDay ? day : lastDay;
+    return DateTime(y, m, d);
+  }
 }
 
 class _ExpenseItem extends StatelessWidget {
   final Expense e;
   final String currencyCode;
   final VoidCallback onDelete;
+  final Future<void> Function()? onMarkPaid;
 
   const _ExpenseItem({
     required this.e,
     required this.currencyCode,
     required this.onDelete,
+    this.onMarkPaid,
   });
 
   static const Map<String, ({String symbol, String locale, double rate})>
@@ -274,6 +370,29 @@ class _ExpenseItem extends StatelessWidget {
       symbol: _currencies[currencyCode]!.symbol,
       decimalDigits: 0,
     );
+
+    // status label for next billing date
+    String statusText;
+    Color statusColor;
+    if (e.nextBillingDate != null) {
+      final days = e.nextBillingDate!.difference(DateTime.now()).inDays;
+      if (days < 0) {
+        statusText = 'Lewat ${-days} hari';
+        statusColor = Colors.red;
+      } else if (days == 0) {
+        statusText = 'Jatuh tempo hari ini';
+        statusColor = Colors.orange;
+      } else if (days <= 7) {
+        statusText = 'Jatuh tempo dalam $days hari';
+        statusColor = Colors.orange;
+      } else {
+        statusText = 'Jatuh tempo dalam $days hari';
+        statusColor = Colors.green;
+      }
+    } else {
+      statusText = 'Tidak ada tagihan berikutnya';
+      statusColor = Colors.grey;
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
@@ -310,18 +429,64 @@ class _ExpenseItem extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                e.note.isEmpty
-                    ? _dateString(e.date)
-                    : '${_dateString(e.date)}  ·  ${e.note}',
-                style: const TextStyle(color: Color(0xFF708090)),
+              Text(() {
+                final parts = <String>[];
+                parts.add(_dateString(e.date));
+                if (e.note.isNotEmpty) parts.add(e.note);
+                if (e.nextBillingDate != null) {
+                  parts.add('Tagihan: ${_dateString(e.nextBillingDate!)}');
+                }
+                if (e.frequency != 'Sekali') {
+                  parts.add('Periode: ${e.frequency}');
+                }
+                return parts.join('  ·  ');
+              }(), style: const TextStyle(color: Color(0xFF708090))),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Chip(
+                    backgroundColor: statusColor.withValues(alpha: 0.12),
+                    label: Text(
+                      statusText,
+                      style: TextStyle(
+                        color: statusColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          trailing: IconButton(
-            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-            onPressed: onDelete,
-            tooltip: 'Hapus',
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Builder(
+                builder: (ctx) {
+                  final disableMarkPaid =
+                      e.paymentType == 'Langganan' &&
+                      e.nextBillingDate != null &&
+                      e.nextBillingDate!.isAfter(DateTime.now());
+                  return IconButton(
+                    icon: Icon(
+                      Icons.check_circle_outline,
+                      color: disableMarkPaid ? Colors.grey : Colors.green,
+                    ),
+                    onPressed: disableMarkPaid
+                        ? null
+                        : () => onMarkPaid?.call(),
+                    tooltip: disableMarkPaid
+                        ? 'Sudah dibayar untuk periode ini'
+                        : 'Tandai sudah dibayar',
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                onPressed: onDelete,
+                tooltip: 'Hapus',
+              ),
+            ],
           ),
         ),
       ),
@@ -402,7 +567,7 @@ class _SummaryCard extends StatelessWidget {
                         icon: Icons.currency_exchange,
                       ),
                       const SizedBox(width: 8),
-                      _Badge(label: '$count transaksi', icon: Icons.list_alt),
+                      _Badge(label: '$count langganan', icon: Icons.list_alt),
                     ],
                   ),
                 ],
@@ -463,7 +628,7 @@ class _EmptyState extends StatelessWidget {
             Icon(Icons.inbox_rounded, size: 56, color: Color(0xFFB0BEC5)),
             SizedBox(height: 12),
             Text(
-              'Belum ada pengeluaran',
+              'Belum ada langganan',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -472,7 +637,7 @@ class _EmptyState extends StatelessWidget {
             ),
             SizedBox(height: 6),
             Text(
-              'Tekan tombol Tambah untuk mulai mencatat.',
+              'Tekan tombol Tambah untuk mulai menambahkan langganan.',
               style: TextStyle(color: Color(0xFF78909C)),
             ),
           ],

@@ -20,12 +20,24 @@ class Expense {
   @HiveField(4)
   final String note;
 
+  @HiveField(5)
+  final DateTime? nextBillingDate;
+
+  @HiveField(6)
+  final String frequency; // 'Sekali', 'Mingguan', 'Bulanan', 'Tahunan'
+
+  @HiveField(7)
+  final String paymentType; // 'Langganan', 'Kredit', 'PayLater'
+
   const Expense({
     required this.id,
     required this.amount,
     required this.category,
     required this.date,
     required this.note,
+    this.nextBillingDate,
+    required this.frequency,
+    required this.paymentType,
   });
 
   factory Expense.fromJson(Map<String, dynamic> json, {String? id}) {
@@ -40,12 +52,26 @@ class Expense {
     } else {
       dt = DateTime.now();
     }
+
+    DateTime? next;
+    final rawNext = json['nextBillingDate'];
+    if (rawNext is Timestamp) {
+      next = rawNext.toDate();
+    } else if (rawNext is DateTime) {
+      next = rawNext;
+    } else if (rawNext is String) {
+      next = DateTime.tryParse(rawNext);
+    }
+
     return Expense(
       id: id ?? json['id'] as String,
       amount: (json['amount'] as num).toDouble(),
       category: json['category'] as String,
       date: dt,
       note: (json['note'] as String?) ?? '',
+      nextBillingDate: next,
+      frequency: (json['frequency'] as String?) ?? 'Bulanan',
+      paymentType: (json['paymentType'] as String?) ?? 'Langganan',
     );
   }
 
@@ -55,5 +81,10 @@ class Expense {
     'category': category,
     'date': Timestamp.fromDate(date),
     'note': note,
+    'nextBillingDate': nextBillingDate == null
+        ? null
+        : Timestamp.fromDate(nextBillingDate!),
+    'frequency': frequency,
+    'paymentType': paymentType,
   };
 }

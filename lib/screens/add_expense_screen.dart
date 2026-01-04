@@ -15,8 +15,27 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
-  String _category = 'Makan';
+  String _category = 'Streaming';
   DateTime _date = DateTime.now();
+  DateTime? _nextBillingDate;
+  String _frequency = 'Bulanan';
+  String _paymentType = 'Langganan';
+
+  DateTime _computeNextBilling(DateTime from, String frequency) {
+    switch (frequency) {
+      case 'Mingguan':
+        return from.add(const Duration(days: 7));
+      case 'Tahunan':
+        return DateTime(from.year + 1, from.month, from.day);
+      case 'Bulanan':
+      default:
+        final nextMonth = DateTime(from.year, from.month + 1, from.day);
+        // If day overflow (e.g., Jan 31 -> Feb 31 invalid), fallback to last day of next month
+        if (nextMonth.month == ((from.month % 12) + 1)) return nextMonth;
+        final lastDay = DateTime(from.year, from.month + 2, 0).day;
+        return DateTime(from.year, from.month + 1, lastDay);
+    }
+  }
 
   @override
   void dispose() {
@@ -28,11 +47,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     final categories = const [
-      'Makan',
-      'Transportasi',
-      'Kost',
-      'Kuliah',
-      'Hiburan',
+      'Game',
+      'Streaming',
+      'Kesehatan',
+      'Utilitas',
+      'Lainnya',
     ];
     return Scaffold(
       body: Container(
@@ -51,10 +70,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                 child: Row(
                   children: const [
-                    Icon(Icons.add_card, color: Colors.white),
+                    Icon(Icons.subscriptions, color: Colors.white),
                     SizedBox(width: 10),
                     Text(
-                      'Tambah Pengeluaran',
+                      'Tambah Langganan',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -90,7 +109,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                               TextFormField(
                                 controller: _amountCtrl,
                                 decoration: const InputDecoration(
-                                  labelText: 'Nominal',
+                                  labelText: 'Biaya per bulan',
                                   prefixText: 'Rp ',
                                 ),
                                 keyboardType:
@@ -104,11 +123,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                 ],
                                 validator: (v) {
                                   if (v == null || v.trim().isEmpty) {
-                                    return 'Masukkan nominal';
+                                    return 'Masukkan biaya';
                                   }
                                   final parsed = double.tryParse(v);
                                   if (parsed == null || parsed <= 0) {
-                                    return 'Nominal tidak valid';
+                                    return 'Biaya tidak valid';
                                   }
                                   return null;
                                 },
@@ -154,10 +173,55 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                 ],
                               ),
                               const SizedBox(height: 16),
+                              const Text(
+                                'Periode',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF2B3C4E),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  for (final f in [
+                                    'Sekali',
+                                    'Mingguan',
+                                    'Bulanan',
+                                    'Tahunan',
+                                  ])
+                                    ChoiceChip(
+                                      label: Text(f),
+                                      selected: _frequency == f,
+                                      onSelected: (_) => setState(() {
+                                        _frequency = f;
+                                      }),
+                                      selectedColor: const Color(
+                                        0xFF16A085,
+                                      ).withValues(alpha: 0.15),
+                                      labelStyle: TextStyle(
+                                        color: _frequency == f
+                                            ? const Color(0xFF16A085)
+                                            : const Color(0xFF2B3C4E),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        side: BorderSide(
+                                          color: _frequency == f
+                                              ? const Color(0xFF16A085)
+                                              : const Color(0xFFE0E6ED),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
                               ListTile(
                                 contentPadding: EdgeInsets.zero,
                                 title: const Text(
-                                  'Tanggal',
+                                  'Tanggal Tagihan',
                                   style: TextStyle(fontWeight: FontWeight.w700),
                                 ),
                                 subtitle: Text(_dateString(_date)),
@@ -177,10 +241,96 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                 ),
                               ),
                               const SizedBox(height: 8),
+                              ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                title: const Text(
+                                  'Tanggal Tagihan Berikutnya',
+                                  style: TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                                subtitle: Text(
+                                  _nextBillingDate == null
+                                      ? 'Belum diatur'
+                                      : _dateString(_nextBillingDate!),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.date_range),
+                                      onPressed: () async {
+                                        final picked = await showDatePicker(
+                                          context: context,
+                                          initialDate:
+                                              _nextBillingDate ?? _date,
+                                          firstDate: DateTime(2000),
+                                          lastDate: DateTime(2100),
+                                        );
+                                        if (picked != null) {
+                                          setState(
+                                            () => _nextBillingDate = picked,
+                                          );
+                                        }
+                                      },
+                                    ),
+                                    if (_nextBillingDate != null)
+                                      IconButton(
+                                        icon: const Icon(Icons.clear),
+                                        onPressed: () => setState(
+                                          () => _nextBillingDate = null,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Tipe Pembayaran',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF2B3C4E),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  for (final p in [
+                                    'Langganan',
+                                    'Kredit',
+                                    'PayLater',
+                                  ])
+                                    ChoiceChip(
+                                      label: Text(p),
+                                      selected: _paymentType == p,
+                                      onSelected: (_) => setState(() {
+                                        _paymentType = p;
+                                      }),
+                                      selectedColor: const Color(
+                                        0xFF16A085,
+                                      ).withValues(alpha: 0.15),
+                                      labelStyle: TextStyle(
+                                        color: _paymentType == p
+                                            ? const Color(0xFF16A085)
+                                            : const Color(0xFF2B3C4E),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        side: BorderSide(
+                                          color: _paymentType == p
+                                              ? const Color(0xFF16A085)
+                                              : const Color(0xFFE0E6ED),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
                               TextFormField(
                                 controller: _noteCtrl,
                                 decoration: const InputDecoration(
-                                  labelText: 'Catatan (opsional)',
+                                  labelText: 'Deskripsi (opsional)',
                                 ),
                                 maxLines: 2,
                               ),
@@ -190,7 +340,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                 child: FilledButton.icon(
                                   onPressed: _save,
                                   icon: const Icon(Icons.save),
-                                  label: const Text('Simpan'),
+                                  label: const Text('Simpan Langganan'),
                                   style: FilledButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 14,
@@ -217,12 +367,21 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     if (!_formKey.currentState!.validate()) return;
     final amount = double.parse(_amountCtrl.text);
     final id = DateTime.now().microsecondsSinceEpoch.toString();
+    // If this is a recurring subscription and user didn't pick a next billing date,
+    // compute one automatically from the selected date.
+    if (_frequency != 'Sekali' && _nextBillingDate == null) {
+      _nextBillingDate = _computeNextBilling(_date, _frequency);
+    }
+
     final e = Expense(
       id: id,
       amount: amount,
       category: _category,
       date: _date,
       note: _noteCtrl.text.trim(),
+      nextBillingDate: _nextBillingDate,
+      frequency: _frequency,
+      paymentType: _paymentType,
     );
     expenseRepo.add(e);
     Navigator.of(context).pop();

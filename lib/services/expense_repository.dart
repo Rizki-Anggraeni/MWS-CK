@@ -6,6 +6,7 @@ import '../models/expense.dart';
 abstract class ExpenseRepository {
   Stream<List<Expense>> watchAll();
   Future<void> add(Expense e);
+  Future<void> update(Expense e);
   Future<void> delete(String id);
 }
 
@@ -15,6 +16,11 @@ class HiveExpenseRepository implements ExpenseRepository {
 
   @override
   Future<void> add(Expense e) async {
+    await box.put(e.id, e);
+  }
+
+  @override
+  Future<void> update(Expense e) async {
     await box.put(e.id, e);
   }
 
@@ -45,6 +51,11 @@ class FirestoreExpenseRepository implements ExpenseRepository {
 
   @override
   Future<void> add(Expense e) async {
+    await _collectionForUser().doc(e.id).set(e);
+  }
+
+  @override
+  Future<void> update(Expense e) async {
     await _collectionForUser().doc(e.id).set(e);
   }
 
