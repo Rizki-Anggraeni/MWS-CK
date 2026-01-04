@@ -49,14 +49,23 @@ class _HomeScreenState extends State<HomeScreen> {
           final rate = _currencies[_currencyCode]!.rate;
           final totalConverted = totalIdr * rate;
           final grouped = _groupByDate(items);
-          final datesDesc = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
+          final datesDesc = grouped.keys.toList()
+            ..sort((a, b) => b.compareTo(a));
 
           // Upcoming due within 30 days
           final upcoming = items
               .where((e) => e.nextBillingDate != null)
-              .where((e) => e.nextBillingDate!.isAfter(now) && e.nextBillingDate!.isBefore(now.add(const Duration(days: 30))))
+              .where(
+                (e) =>
+                    e.nextBillingDate!.isAfter(now) &&
+                    e.nextBillingDate!.isBefore(
+                      now.add(const Duration(days: 30)),
+                    ),
+              )
               .toList();
-          final upcomingTotal = upcoming.fold<double>(0, (p, e) => p + e.amount) * _currencies[_currencyCode]!.rate;
+          final upcomingTotal =
+              upcoming.fold<double>(0, (p, e) => p + e.amount) *
+              _currencies[_currencyCode]!.rate;
           final upcomingCount = upcoming.length;
 
           return Container(
@@ -318,10 +327,15 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: const Color(0xFF16A085),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         onPressed: () async {
-          await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddExpenseScreen()));
+          await Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const AddExpenseScreen()));
         },
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Tambah Langganan', style: TextStyle(color: Colors.white)),
+        label: const Text(
+          'Tambah Langganan',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
     );
   }
@@ -426,11 +440,17 @@ class _ExpenseItem extends StatelessWidget {
               Expanded(
                 child: Text(
                   e.category,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
+              const SizedBox(width: 8),
               Chip(
-                label: Text(e.paymentType, style: const TextStyle(fontSize: 12)),
+                label: Text(
+                  e.paymentType,
+                  style: const TextStyle(fontSize: 12),
+                ),
                 backgroundColor: Colors.grey.shade100,
                 visualDensity: VisualDensity.compact,
               ),
@@ -450,7 +470,9 @@ class _ExpenseItem extends StatelessWidget {
                 return parts.join('  ·  ');
               }(), style: const TextStyle(color: Color(0xFF708090))),
               const SizedBox(height: 8),
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
                 children: [
                   Chip(
                     backgroundColor: statusColor.withValues(alpha: 0.12),
@@ -463,10 +485,12 @@ class _ExpenseItem extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
                   if (e.frequency != 'Sekali')
                     Chip(
-                      label: Text(e.frequency, style: const TextStyle(fontSize: 12)),
+                      label: Text(
+                        e.frequency,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                       backgroundColor: Colors.grey.shade100,
                       visualDensity: VisualDensity.compact,
                     ),
@@ -478,9 +502,19 @@ class _ExpenseItem extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                formatter.format(converted),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF2B3C4E)),
+              SizedBox(
+                width: 110,
+                child: Text(
+                  formatter.format(converted),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF2B3C4E),
+                  ),
+                ),
               ),
               const SizedBox(height: 8),
               Row(
@@ -488,24 +522,34 @@ class _ExpenseItem extends StatelessWidget {
                 children: [
                   Builder(
                     builder: (ctx) {
-                      final disableMarkPaid = e.paymentType == 'Langganan' && e.nextBillingDate != null && e.nextBillingDate!.isAfter(DateTime.now());
+                      final disableMarkPaid =
+                          e.paymentType == 'Langganan' &&
+                          e.nextBillingDate != null &&
+                          e.nextBillingDate!.isAfter(DateTime.now());
                       return IconButton(
                         icon: Icon(
                           Icons.check_circle_outline,
                           color: disableMarkPaid ? Colors.grey : Colors.green,
                         ),
-                        onPressed: disableMarkPaid ? null : () => onMarkPaid?.call(),
-                        tooltip: disableMarkPaid ? 'Sudah dibayar untuk periode ini' : 'Tandai sudah dibayar',
+                        onPressed: disableMarkPaid
+                            ? null
+                            : () => onMarkPaid?.call(),
+                        tooltip: disableMarkPaid
+                            ? 'Sudah dibayar untuk periode ini'
+                            : 'Tandai sudah dibayar',
                       );
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.redAccent,
+                    ),
                     onPressed: onDelete,
                     tooltip: 'Hapus',
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -595,7 +639,10 @@ class _SummaryCard extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12),
@@ -603,22 +650,47 @@ class _SummaryCard extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('Jatuh tempo 30 hari', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    formatter.format(upcomingTotal),
-                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
-                                  ),
-                                ],
+                              Flexible(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Jatuh tempo 30 hari',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      formatter.format(upcomingTotal),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              CircleAvatar(
-                                backgroundColor: Colors.white24,
-                                child: Text(
-                                  '$upcomingCount',
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                width: 36,
+                                height: 36,
+                                child: CircleAvatar(
+                                  radius: 18,
+                                  backgroundColor: Colors.white24,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      '$upcomingCount',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -690,7 +762,11 @@ class _EmptyState extends StatelessWidget {
                   colors: [Color(0xFF16A085), Color(0xFF2ECC71)],
                 ),
               ),
-              child: const Icon(Icons.subscriptions, size: 42, color: Colors.white),
+              child: const Icon(
+                Icons.subscriptions,
+                size: 42,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -709,10 +785,17 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             ElevatedButton.icon(
-              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddExpenseScreen())),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
+              ),
               icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('Tambah Langganan', style: TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A085)),
+              label: const Text(
+                'Tambah Langganan',
+                style: TextStyle(color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF16A085),
+              ),
             ),
           ],
         ),

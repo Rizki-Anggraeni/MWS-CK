@@ -116,9 +116,14 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                   labelText: 'Biaya per periode',
                                   prefixText: 'Rp ',
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 inputFormatters: [
-                                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'[0-9.]'),
+                                  ),
                                 ],
                                 validator: (v) {
                                   if (v == null || v.trim().isEmpty) {
@@ -151,15 +156,26 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                       onSelected: (_) => setState(() {
                                         _category = c;
                                       }),
-                                      selectedColor: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.12),
+                                      selectedColor: Theme.of(context)
+                                          .colorScheme
+                                          .secondary
+                                          .withValues(alpha: 0.12),
                                       labelStyle: TextStyle(
-                                        color: _category == c ? Theme.of(context).colorScheme.primary : const Color(0xFF2B3C4E),
+                                        color: _category == c
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                            : const Color(0xFF2B3C4E),
                                         fontWeight: FontWeight.w600,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         side: BorderSide(
-                                          color: _category == c ? Theme.of(context).colorScheme.primary : const Color(0xFFE0E6ED),
+                                          color: _category == c
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
+                                              : const Color(0xFFE0E6ED),
                                         ),
                                       ),
                                     ),
@@ -190,15 +206,26 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                       onSelected: (_) => setState(() {
                                         _frequency = f;
                                       }),
-                                      selectedColor: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.12),
+                                      selectedColor: Theme.of(context)
+                                          .colorScheme
+                                          .secondary
+                                          .withValues(alpha: 0.12),
                                       labelStyle: TextStyle(
-                                        color: _frequency == f ? Theme.of(context).colorScheme.primary : const Color(0xFF2B3C4E),
+                                        color: _frequency == f
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                            : const Color(0xFF2B3C4E),
                                         fontWeight: FontWeight.w600,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         side: BorderSide(
-                                          color: _frequency == f ? Theme.of(context).colorScheme.primary : const Color(0xFFE0E6ED),
+                                          color: _frequency == f
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
+                                              : const Color(0xFFE0E6ED),
                                         ),
                                       ),
                                     ),
@@ -293,15 +320,26 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                       onSelected: (_) => setState(() {
                                         _paymentType = p;
                                       }),
-                                      selectedColor: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.12),
+                                      selectedColor: Theme.of(context)
+                                          .colorScheme
+                                          .secondary
+                                          .withValues(alpha: 0.12),
                                       labelStyle: TextStyle(
-                                        color: _paymentType == p ? Theme.of(context).colorScheme.primary : const Color(0xFF2B3C4E),
+                                        color: _paymentType == p
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                            : const Color(0xFF2B3C4E),
                                         fontWeight: FontWeight.w600,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         side: BorderSide(
-                                          color: _paymentType == p ? Theme.of(context).colorScheme.primary : const Color(0xFFE0E6ED),
+                                          color: _paymentType == p
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
+                                              : const Color(0xFFE0E6ED),
                                         ),
                                       ),
                                     ),
@@ -320,12 +358,22 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
                                   onPressed: _save,
-                                  icon: const Icon(Icons.save, color: Colors.white),
-                                  label: const Text('Simpan Langganan', style: TextStyle(color: Colors.white)),
+                                  icon: const Icon(
+                                    Icons.save,
+                                    color: Colors.white,
+                                  ),
+                                  label: const Text(
+                                    'Simpan Langganan',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF16A085),
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                 ),
                               ),

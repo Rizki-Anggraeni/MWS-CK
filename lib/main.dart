@@ -56,7 +56,10 @@ class MyApp extends StatelessWidget {
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 14,
+            horizontal: 16,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -64,7 +67,9 @@ class MyApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             padding: const EdgeInsets.symmetric(vertical: 14),
             backgroundColor: const Color(0xFF16A085),
           ),
@@ -74,8 +79,14 @@ class MyApp extends StatelessWidget {
           disabledColor: Colors.grey,
           selectedColor: Color(0xFF16A085),
           secondarySelectedColor: Color(0xFF16A085),
-          labelStyle: TextStyle(color: Color(0xFF2B3C4E), fontWeight: FontWeight.w600),
-          secondaryLabelStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          labelStyle: TextStyle(
+            color: Color(0xFF2B3C4E),
+            fontWeight: FontWeight.w600,
+          ),
+          secondaryLabelStyle: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         ),
         useMaterial3: true,
