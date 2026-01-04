@@ -22,14 +22,24 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Manajer Langganan',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF16A085)),
+        colorScheme: const ColorScheme(
+          brightness: Brightness.light,
+          primary: Color(0xFF0F9D58),
+          onPrimary: Colors.white,
+          secondary: Color(0xFF16A085),
+          onSecondary: Colors.white,
+          error: Colors.redAccent,
+          onError: Colors.white,
+          surface: Color(0xFFF4F7FB),
+          onSurface: Color(0xFF263238),
+        ),
         scaffoldBackgroundColor: const Color(0xFFF4F7FB),
-        cardTheme: const CardThemeData(
-          elevation: 1,
+        cardTheme: CardThemeData(
+          elevation: 4,
           shadowColor: Colors.black12,
           surfaceTintColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16)),
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
         appBarTheme: const AppBarTheme(
@@ -37,11 +47,36 @@ class MyApp extends StatelessWidget {
           titleTextStyle: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: Colors.black,
+            color: Colors.white,
           ),
           backgroundColor: Colors.transparent,
           elevation: 0,
           surfaceTintColor: Colors.transparent,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            backgroundColor: const Color(0xFF16A085),
+          ),
+        ),
+        chipTheme: const ChipThemeData(
+          backgroundColor: Color(0xFFF1F8F4),
+          disabledColor: Colors.grey,
+          selectedColor: Color(0xFF16A085),
+          secondarySelectedColor: Color(0xFF16A085),
+          labelStyle: TextStyle(color: Color(0xFF2B3C4E), fontWeight: FontWeight.w600),
+          secondaryLabelStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         ),
         useMaterial3: true,
       ),

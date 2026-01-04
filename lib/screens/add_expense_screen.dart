@@ -67,12 +67,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                 child: Row(
-                  children: const [
-                    Icon(Icons.subscriptions, color: Colors.white),
-                    SizedBox(width: 10),
-                    Text(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    ),
+                    const SizedBox(width: 6),
+                    const Text(
                       'Tambah Langganan',
                       style: TextStyle(
                         color: Colors.white,
@@ -109,17 +112,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                               TextFormField(
                                 controller: _amountCtrl,
                                 decoration: const InputDecoration(
-                                  labelText: 'Biaya per bulan',
+                                  prefixIcon: Icon(Icons.attach_money_rounded),
+                                  labelText: 'Biaya per periode',
                                   prefixText: 'Rp ',
                                 ),
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                 inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'[0-9.]'),
-                                  ),
+                                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                                 ],
                                 validator: (v) {
                                   if (v == null || v.trim().isEmpty) {
@@ -152,21 +151,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                       onSelected: (_) => setState(() {
                                         _category = c;
                                       }),
-                                      selectedColor: const Color(
-                                        0xFF16A085,
-                                      ).withValues(alpha: 0.15),
+                                      selectedColor: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.12),
                                       labelStyle: TextStyle(
-                                        color: _category == c
-                                            ? const Color(0xFF16A085)
-                                            : const Color(0xFF2B3C4E),
+                                        color: _category == c ? Theme.of(context).colorScheme.primary : const Color(0xFF2B3C4E),
                                         fontWeight: FontWeight.w600,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         side: BorderSide(
-                                          color: _category == c
-                                              ? const Color(0xFF16A085)
-                                              : const Color(0xFFE0E6ED),
+                                          color: _category == c ? Theme.of(context).colorScheme.primary : const Color(0xFFE0E6ED),
                                         ),
                                       ),
                                     ),
@@ -197,21 +190,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                       onSelected: (_) => setState(() {
                                         _frequency = f;
                                       }),
-                                      selectedColor: const Color(
-                                        0xFF16A085,
-                                      ).withValues(alpha: 0.15),
+                                      selectedColor: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.12),
                                       labelStyle: TextStyle(
-                                        color: _frequency == f
-                                            ? const Color(0xFF16A085)
-                                            : const Color(0xFF2B3C4E),
+                                        color: _frequency == f ? Theme.of(context).colorScheme.primary : const Color(0xFF2B3C4E),
                                         fontWeight: FontWeight.w600,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         side: BorderSide(
-                                          color: _frequency == f
-                                              ? const Color(0xFF16A085)
-                                              : const Color(0xFFE0E6ED),
+                                          color: _frequency == f ? Theme.of(context).colorScheme.primary : const Color(0xFFE0E6ED),
                                         ),
                                       ),
                                     ),
@@ -306,21 +293,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                       onSelected: (_) => setState(() {
                                         _paymentType = p;
                                       }),
-                                      selectedColor: const Color(
-                                        0xFF16A085,
-                                      ).withValues(alpha: 0.15),
+                                      selectedColor: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.12),
                                       labelStyle: TextStyle(
-                                        color: _paymentType == p
-                                            ? const Color(0xFF16A085)
-                                            : const Color(0xFF2B3C4E),
+                                        color: _paymentType == p ? Theme.of(context).colorScheme.primary : const Color(0xFF2B3C4E),
                                         fontWeight: FontWeight.w600,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         side: BorderSide(
-                                          color: _paymentType == p
-                                              ? const Color(0xFF16A085)
-                                              : const Color(0xFFE0E6ED),
+                                          color: _paymentType == p ? Theme.of(context).colorScheme.primary : const Color(0xFFE0E6ED),
                                         ),
                                       ),
                                     ),
@@ -337,14 +318,14 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                               const SizedBox(height: 24),
                               SizedBox(
                                 width: double.infinity,
-                                child: FilledButton.icon(
+                                child: ElevatedButton.icon(
                                   onPressed: _save,
-                                  icon: const Icon(Icons.save),
-                                  label: const Text('Simpan Langganan'),
-                                  style: FilledButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                    ),
+                                  icon: const Icon(Icons.save, color: Colors.white),
+                                  label: const Text('Simpan Langganan', style: TextStyle(color: Colors.white)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF16A085),
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
                                 ),
                               ),

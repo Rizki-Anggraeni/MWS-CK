@@ -49,8 +49,15 @@ class _HomeScreenState extends State<HomeScreen> {
           final rate = _currencies[_currencyCode]!.rate;
           final totalConverted = totalIdr * rate;
           final grouped = _groupByDate(items);
-          final datesDesc = grouped.keys.toList()
-            ..sort((a, b) => b.compareTo(a));
+          final datesDesc = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
+
+          // Upcoming due within 30 days
+          final upcoming = items
+              .where((e) => e.nextBillingDate != null)
+              .where((e) => e.nextBillingDate!.isAfter(now) && e.nextBillingDate!.isBefore(now.add(const Duration(days: 30))))
+              .toList();
+          final upcomingTotal = upcoming.fold<double>(0, (p, e) => p + e.amount) * _currencies[_currencyCode]!.rate;
+          final upcomingCount = upcoming.length;
 
           return Container(
             decoration: const BoxDecoration(
@@ -155,6 +162,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       total: totalConverted,
                       currencyCode: _currencyCode,
                       count: items.length,
+                      upcomingTotal: upcomingTotal,
+                      upcomingCount: upcomingCount,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -306,13 +315,13 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color(0xFF16A085),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         onPressed: () async {
-          await Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => const AddExpenseScreen()));
+          await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddExpenseScreen()));
         },
-        icon: const Icon(Icons.add),
-        label: const Text('Tambah Langganan'),
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text('Tambah Langganan', style: TextStyle(color: Colors.white)),
       ),
     );
   }
@@ -412,23 +421,25 @@ class _ExpenseItem extends StatelessWidget {
             ),
             child: Icon(iconData, color: color, size: 24),
           ),
-          title: Text(
-            e.category,
-            style: const TextStyle(fontWeight: FontWeight.w700),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  e.category,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ),
+              Chip(
+                label: Text(e.paymentType, style: const TextStyle(fontSize: 12)),
+                backgroundColor: Colors.grey.shade100,
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 4),
-              Text(
-                formatter.format(converted),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF2B3C4E),
-                ),
-              ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(() {
                 final parts = <String>[];
                 parts.add(_dateString(e.date));
@@ -436,12 +447,9 @@ class _ExpenseItem extends StatelessWidget {
                 if (e.nextBillingDate != null) {
                   parts.add('Tagihan: ${_dateString(e.nextBillingDate!)}');
                 }
-                if (e.frequency != 'Sekali') {
-                  parts.add('Periode: ${e.frequency}');
-                }
                 return parts.join('  ·  ');
               }(), style: const TextStyle(color: Color(0xFF708090))),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Chip(
@@ -451,41 +459,53 @@ class _ExpenseItem extends StatelessWidget {
                       style: TextStyle(
                         color: statusColor,
                         fontWeight: FontWeight.w600,
+                        fontSize: 12,
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  if (e.frequency != 'Sekali')
+                    Chip(
+                      label: Text(e.frequency, style: const TextStyle(fontSize: 12)),
+                      backgroundColor: Colors.grey.shade100,
+                      visualDensity: VisualDensity.compact,
+                    ),
                 ],
               ),
             ],
           ),
-          trailing: Row(
+          trailing: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Builder(
-                builder: (ctx) {
-                  final disableMarkPaid =
-                      e.paymentType == 'Langganan' &&
-                      e.nextBillingDate != null &&
-                      e.nextBillingDate!.isAfter(DateTime.now());
-                  return IconButton(
-                    icon: Icon(
-                      Icons.check_circle_outline,
-                      color: disableMarkPaid ? Colors.grey : Colors.green,
-                    ),
-                    onPressed: disableMarkPaid
-                        ? null
-                        : () => onMarkPaid?.call(),
-                    tooltip: disableMarkPaid
-                        ? 'Sudah dibayar untuk periode ini'
-                        : 'Tandai sudah dibayar',
-                  );
-                },
+              Text(
+                formatter.format(converted),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF2B3C4E)),
               ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                onPressed: onDelete,
-                tooltip: 'Hapus',
-              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Builder(
+                    builder: (ctx) {
+                      final disableMarkPaid = e.paymentType == 'Langganan' && e.nextBillingDate != null && e.nextBillingDate!.isAfter(DateTime.now());
+                      return IconButton(
+                        icon: Icon(
+                          Icons.check_circle_outline,
+                          color: disableMarkPaid ? Colors.grey : Colors.green,
+                        ),
+                        onPressed: disableMarkPaid ? null : () => onMarkPaid?.call(),
+                        tooltip: disableMarkPaid ? 'Sudah dibayar untuk periode ini' : 'Tandai sudah dibayar',
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                    onPressed: onDelete,
+                    tooltip: 'Hapus',
+                  ),
+                ],
+              )
             ],
           ),
         ),
@@ -503,11 +523,15 @@ class _SummaryCard extends StatelessWidget {
   final double total;
   final String currencyCode;
   final int count;
+  final double upcomingTotal;
+  final int upcomingCount;
 
   const _SummaryCard({
     required this.total,
     required this.currencyCode,
     required this.count,
+    required this.upcomingTotal,
+    required this.upcomingCount,
   });
 
   static const Map<String, ({String symbol, String locale, double rate})>
@@ -555,11 +579,11 @@ class _SummaryCard extends StatelessWidget {
                     formatter.format(total),
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       _Badge(
@@ -568,6 +592,39 @@ class _SummaryCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       _Badge(label: '$count langganan', icon: Icons.list_alt),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Jatuh tempo 30 hari', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    formatter.format(upcomingTotal),
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                                  ),
+                                ],
+                              ),
+                              CircleAvatar(
+                                backgroundColor: Colors.white24,
+                                child: Text(
+                                  '$upcomingCount',
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -624,21 +681,38 @@ class _EmptyState extends StatelessWidget {
         padding: const EdgeInsets.only(top: 48),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.inbox_rounded, size: 56, color: Color(0xFFB0BEC5)),
-            SizedBox(height: 12),
-            Text(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [Color(0xFF16A085), Color(0xFF2ECC71)],
+                ),
+              ),
+              child: const Icon(Icons.subscriptions, size: 42, color: Colors.white),
+            ),
+            const SizedBox(height: 16),
+            const Text(
               'Belum ada langganan',
               style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF455A64),
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF263238),
               ),
             ),
-            SizedBox(height: 6),
-            Text(
-              'Tekan tombol Tambah untuk mulai menambahkan langganan.',
-              style: TextStyle(color: Color(0xFF78909C)),
+            const SizedBox(height: 8),
+            const Text(
+              'Tekan tombol Tambah untuk mulai menambahkan langganan dan lihat ringkasannya di sini.',
+              style: TextStyle(color: Color(0xFF607D8B)),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 18),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddExpenseScreen())),
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text('Tambah Langganan', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A085)),
             ),
           ],
         ),
